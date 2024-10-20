@@ -1,51 +1,28 @@
 const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const axios = require('axios');
+const cors = require('cors');
+const fetch = require('node-fetch');
+
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
-const port = process.env.PORT || 3000;
+app.use(cors());
 
-app.use(express.static(__dirname));
-
-const checkStatus = async () => {
-    let statusUpdates = {
-        homepage: { status: false },
-        panel: { status: false },
-        dashboard: { status: false }
-    };
-    const homepageUrl = 'https://polarhost.uk.to';
-    const panelUrl = 'https://panel.polarhost.uk.to';
-    const dashboardUrl = 'https://dash.polarhost.uk.to';
+const checkStatus = async (url) => {
     try {
-        const homepageResponse = await axios.get(homepageUrl);
-        statusUpdates.homepage.status = homepageResponse.status === 200;
+        const response = await fetch(url);
+        return response.ok ? 'OK' : 'DOWN';
     } catch {
-        statusUpdates.homepage.status = false;
+        return 'DOWN';
     }
-    try {
-        const panelResponse = await axios.get(panelUrl);
-        statusUpdates.panel.status = panelResponse.status === 200;
-    } catch {
-        statusUpdates.panel.status = false;
-    }
-    try {
-        const dashboardResponse = await axios.get(dashboardUrl);
-        statusUpdates.dashboard.status = dashboardResponse.status === 200;
-    } catch {
-        statusUpdates.dashboard.status = false;
-    }
-    return statusUpdates;
 };
 
-const emitStatusUpdates = async () => {
-    const statusUpdates = await checkStatus();
-    io.emit('statusUpdate', statusUpdates);
-};
+app.get('/api/status', async (req, res) => {
+    const homepage = await checkStatus('https://polarhost.uk.to'); // Replace with your GitHub Pages URL
+    const panel = await checkStatus('https://panel.polarhost.uk.to'); // Replace with your panel URL
+    const dashboard = await checkStatus('https://dash.polarhost.uk.to'); // Replace with your dashboard URL
 
-setInterval(emitStatusUpdates, 5000);
+    res.json({ homepage, panel, dashboard });
+});
 
-server.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
