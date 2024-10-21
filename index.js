@@ -15,11 +15,15 @@ const checkStatus = async (url) => {
 };
 
 app.get('/api/status', async (req, res) => {
-    const homepage = await checkStatus('https://polarhost.uk.to'); // Replace with your GitHub Pages URL
-    const panel = await checkStatus('https://panel.polarhost.uk.to'); // Replace with your panel URL
-    const dashboard = await checkStatus('https://dash.polarhost.uk.to'); // Replace with your dashboard URL
+    const homepage = await checkStatus('https://polarhost.uk.to');
+    const panel = await checkStatus('https://panel.polarhost.uk.to');
+    const dashboard = await checkStatus('https://dash.polarhost.uk.to');
 
-    res.json({ homepage, panel, dashboard });
+    res.json({
+        homepage,
+        panel,
+        dashboard
+    });
 });
 
 const PORT = process.env.PORT || 3000;
